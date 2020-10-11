@@ -75,8 +75,7 @@ def initial_execution(param_name,bucket,key):
     time = get_timestamp(param_name)
     query = 'SELECT name, account_mgr, addr1, addr2, ap_email, bill_to_nbr, billto_only, city, controlling_nbr, controlling_only, country, cust_contact, email, load_create_date, load_update_date, nbr, owner, sales_rep, source_system, state, station, zip FROM public.customers WHERE (billto_only = \'Y\' OR controlling_only = \'Y\') AND (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
-    filename = '/tmp/customers.txt'
-    s3Data = s3UploadObject(queryData,filename,bucket,key)
+    s3Data = s3UploadObject(queryData,'/tmp/customers.txt',bucket,key)
     return execute_db_query(query)
 
 def convert_records(data):

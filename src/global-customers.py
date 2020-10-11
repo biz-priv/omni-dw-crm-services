@@ -71,8 +71,7 @@ def initial_execution(param_name,bucket,key):
     time = get_timestamp(param_name)
     query = 'SELECT new_global_name,bill_to,bill_to_name, care_of_filter, care_of_name, company, customer_type, source_system,subsidiary_consolidation FROM public.global_cust_name WHERE (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
-    filename = '/tmp/global_customers.txt'
-    s3Data = s3UploadObject(queryData,filename,bucket,key)
+    s3Data = s3UploadObject(queryData,'/tmp/global_customers.txt',bucket,key)
     return execute_db_query(query)
 
 def convert_records(data):

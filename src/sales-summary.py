@@ -76,8 +76,7 @@ def initial_execution(param_name,bucket,key):
     time = get_timestamp(param_name)
     query = 'SELECT "bill to customer", "bill to number", "cntrolling customer", "cntrolling customer number", cast(load_create_date as varchar(19)), cast(load_update_date as varchar(19)), "month", "owner", "profit", "sales rep", "source system", "total charge", "total cost", "year" FROM datamart.sales_summary WHERE (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
-    filename = '/tmp/sales_summary.txt'
-    s3Data = s3UploadObject(queryData,filename,bucket,key)
+    s3Data = s3UploadObject(queryData,'/tmp/sales_summary.txt',bucket,key)
     return execute_db_query(query)
 
 def convert_records(data):
