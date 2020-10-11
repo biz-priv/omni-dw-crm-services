@@ -1,0 +1,48 @@
+service: omni-crm
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  deploymentBucket: ${ssm:/omni-dw/${self:provider.stage}/sls/deployment/bucket}
+  role: ${ssm:/omni-dw/${self:provider.stage}/lambda/role}  
+  vpc:
+    securityGroupIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
+  stackTags: 
+    Application: Microsoft Dynamics CRM
+    CreateBy: BizCloudExperts
+    Environment: ${self:provider.stage} 
+
+custom: 
+  serverless-layers:
+    functions:
+      - customers
+      - sales-summary
+      - global-customers    
+    dependenciesPath: ./requirements.txt
+    
+plugins:
+  - serverless-layers
+  - serverless-pseudo-parameters
+  - serverless-step-functions
+
+package:
+  individually: true
+  exclude:
+  - '**/*'
+  - serverless.yml
+
+functions:
+  customers: ${file(config/functions/customers.yml):function}
+  sales-summary: ${file(config/functions/sales-summary.yml):function}
+  global-customers: ${file(config/functions/global-customers.yml):function}
+
+stepFunctions:
+  stateMachines:
+    sales-summary-state-machine: ${file(config/step-functions/sales-summary-state-machine.yml):stateMachine}
+    global-customers-state-machine: ${file(config/step-functions/global-customers-state-machine.yml):stateMachine}
+    customers-state-machine: ${file(config/step-functions/customers-state-machine.yml):stateMachine}
