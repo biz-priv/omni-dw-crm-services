@@ -13,7 +13,7 @@ provider:
     subnetIds:
       - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
   stackTags: 
-    Application: Microsoft Dynamics CRM
+    Application: MicrosoftDynamicsCRM
     CreateBy: BizCloudExperts
     Environment: ${self:provider.stage} 
 

@@ -16,37 +16,31 @@ from src.common import update_date
 from src.common import execute_db_query
 from src.common import get_timestamp
 from src.common import set_timestamp
+from src.common import s3GetObject
+from src.common import s3UploadObject
 
 headers = {'content-type': 'application/json'}
 tz = pytz.timezone('US/Central')
 fmt = '%Y-%m-%d %H:%M:%S'
-s3 = boto3.resource('s3')
-
-bucket = os.environ['s3_bucket']
-key = os.environ['s3_key']
 
 def handler(event, context):
     logger.info("Event: {}".format(json.dumps(event)))
     try:
         url = os.environ['salessummary_table_url']
         timestamp_param_name = os.environ['timestamp_parameter']
+        bucket = os.environ['s3_bucket']
+        key = os.environ['s3_key']
     except Exception as e:
         logging.exception("EnvironmentVariableError: {}".format(e))
         raise EnvironmentVariableError(json.dumps({"httpStatus": 400, "message": "Environment variable not set."}))
 
     if "start_from" in event:
-
-        try:
-            start_record = event["start_from"]
-            s3_data = s3.Object(bucket, key).get()['Body'].read()
-            records = eval(s3_data)
-        except Exception as e:
-            logging.exception("GetS3ObjectError: {}".format(e))
-            raise GetS3ObjectError(json.dumps({"httpStatus": 400, "message": "S3 Get object error."}))
+        start_record = event["start_from"]
+        s3_data = s3GetObject(bucket,key)
+        records = eval(s3_data)
     else:
         start_record = 0
-        records = initial_execution(timestamp_param_name)
-        # event["Records"] = records
+        records = initial_execution(timestamp_param_name,bucket,key)
     
     stop_record = (start_record + 100) if (start_record + 100) < len(records) else len(records)
 
@@ -61,7 +55,6 @@ def handler(event, context):
 
         try:
             r = requests.post(url, headers=headers,data=data)
-            # logger.info("POST API RESPONSE: {}".format(r))
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt))
@@ -78,20 +71,13 @@ def handler(event, context):
         set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt))
     return event
 
-def initial_execution(param_name):
+def initial_execution(param_name,bucket,key):
 
     time = get_timestamp(param_name)
     query = 'SELECT "bill to customer", "bill to number", "cntrolling customer", "cntrolling customer number", cast(load_create_date as varchar(19)), cast(load_update_date as varchar(19)), "month", "owner", "profit", "sales rep", "source system", "total charge", "total cost", "year" FROM datamart.sales_summary WHERE (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
-    
-    try:
-        with open('/tmp/sales_summary.txt', 'w', encoding='utf-8') as f:
-            f.write(str(queryData))
-        s3.meta.client.upload_file('/tmp/sales_summary.txt', bucket, key)
-    except Exception as e:
-        logging.exception("UpdateFileError: {}".format(e))
-        raise UpdateFileError(json.dumps({"httpStatus": 400, "message": "Update file error."}))
-
+    filename = '/tmp/sales_summary.txt'
+    s3Data = s3UploadObject(queryData,filename,bucket,key)
     return execute_db_query(query)
 
 def convert_records(data):
@@ -121,6 +107,7 @@ def convert_records(data):
     
 class EnvironmentVariableError(Exception): pass
 class GetS3ObjectError(Exception): pass
+class UpdateFileError(Exception): pass
 class InitializationError(Exception): pass
 class UpdateFileError(Exception): pass
 class GetParameterError(Exception): pass

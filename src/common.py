@@ -77,7 +77,6 @@ def execute_db_query(query):
         raise DatabaseError(json.dumps({"httpStatus": 400, "message": "Database error."}))
 
 def s3GetObject(bucket,key):
-    
     try:
         s3 = boto3.resource('s3')
     except Exception as e:
@@ -91,9 +90,25 @@ def s3GetObject(bucket,key):
     except Exception as e:
         logging.exception("GetS3ObjectError: {}".format(e))
         raise GetS3ObjectError(json.dumps({"httpStatus": 400, "message": "S3 Get object error."}))
+
+def s3UploadObject(queryData,filename,bucket,key):
+    try:
+        s3 = boto3.resource('s3')
+    except Exception as e:
+        logging.exception("S3InitializationError: {}".format(e))
+        raise InitializationError(json.dumps({"httpStatus": 400, "message": "s3 initialization error."}))
         
+    try:
+         with open(filename, 'w', encoding='utf-8') as f:
+            f.write(str(queryData))
+        s3.meta.client.upload_file(filename, bucket, key)
+    except Exception as e:
+        logging.exception("UpdateFileError: {}".format(e))
+        raise UpdateFileError(json.dumps({"httpStatus": 400, "message": "Update file error."}))
+
 class InitializationError(Exception): pass
 class GetParameterError(Exception): pass
 class SetParameterError(Exception): pass
 class DatabaseError(Exception): pass
 class GetS3ObjectError(Exception): pass
+class UpdateFileError(Exception): pass

@@ -23,8 +23,8 @@ function:
     db_host: ${ssm:/omni-dw/${self:provider.stage}/db/host~true}
     db_port: ${ssm:/omni-dw/${self:provider.stage}/db/port} 
     REGION: ${self:provider.region}
-    customer_table_url: ${ssm:/omni-dw/${self:provider.stage}/customerTableURL}
-    timestamp_parameter: /omni-dw/${self:provider.stage}/customers/timestamp
+    customer_table_url: ${ssm:/${self:service}/${self:provider.stage}/customers/url}
+    timestamp_parameter: /${self:service}/${self:provider.stage}/customers/timestamp
     s3_bucket: ${ssm:/${self:service}/${self:provider.stage}/bucket}
     s3_key: ${ssm:/${self:service}/${self:provider.stage}/customers/s3/key}
 
