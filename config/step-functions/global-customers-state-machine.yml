@@ -1,0 +1,24 @@
+---
+stateMachine:
+  name: ${self:service}-global-customers-state-machine-${self:provider.stage}
+  definition:
+    Comment: 'State machine to process global customers records'
+    StartAt: ProcessRecords
+    States:
+      ProcessRecords:
+        Type: Task
+        Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-global-customers-${self:provider.stage}"
+        Next: CheckNextState
+      CheckNextState: 
+        Type: Choice
+        Choices:
+          - 
+            Variable: "$.status"
+            StringEquals: "InProgress"
+            Next: ProcessRecords
+          - 
+            Variable: "$.status"
+            StringEquals: "Completed"
+            Next: SuccessState
+      SuccessState:
+        Type: Succeed

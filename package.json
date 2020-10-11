@@ -1,0 +1,26 @@
+{
+  "name": "omni-crm",
+  "version": "1.0.0",
+  "description": "omni crm dynamics data load project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bizcloud-experts/omni-dw-crm-services.git"
+  },
+  "author": "BizCloud Experts",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bizcloud-experts/omni-dw-crm-services/issues"
+  },
+  "homepage": "https://github.com/bizcloud-experts/omni-dw-crm-services#readme",
+  "dependencies": {
+    "serverless-pseudo-parameters": "^2.5.0",
+    "serverless-step-functions": "^2.26.0"
+  },
+  "devDependencies": {
+    "serverless-layers": "^2.3.0"
+  }
+}

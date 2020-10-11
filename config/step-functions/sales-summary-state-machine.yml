@@ -1,0 +1,24 @@
+---
+stateMachine:
+  name: ${self:service}-sales-summary-state-machine-${self:provider.stage}
+  definition:
+    Comment: 'State machine to process sales summary records'
+    StartAt: ProcessRecords
+    States:
+      ProcessRecords:
+        Type: Task
+        Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-sales-summary-${self:provider.stage}"
+        Next: CheckNextState
+      CheckNextState: 
+        Type: Choice
+        Choices:
+          - 
+            Variable: "$.status"
+            StringEquals: "InProgress"
+            Next: ProcessRecords
+          - 
+            Variable: "$.status"
+            StringEquals: "Completed"
+            Next: SuccessState
+      SuccessState:
+        Type: Succeed
