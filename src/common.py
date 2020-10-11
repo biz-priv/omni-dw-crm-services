@@ -99,7 +99,7 @@ def s3UploadObject(queryData,filename,bucket,key):
         raise InitializationError(json.dumps({"httpStatus": 400, "message": "s3 initialization error."}))
         
     try:
-         with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, 'w', encoding='utf-8') as f:
             f.write(str(queryData))
         s3.meta.client.upload_file(filename, bucket, key)
     except Exception as e:
