@@ -42,17 +42,16 @@ def handler(event, context):
         start_record = 0
         records = initial_execution(timestamp_param_name,bucket,key)
     
-    stop_record = (start_record + 100) if (start_record + 100) < len(records) else len(records)
+    stop_record = (start_record + 10) if (start_record + 10) < len(records) else len(records)
 
     logger.info("Executing from array index {} to {}".format(start_record, stop_record))
     count = 0
     for record in records[start_record:stop_record]:
-        
+
         count=count+1
-        if count % 100 == 0:
+        if count % 10 == 0:
             logger.info("Working on processing element number: {}".format(records.index(record)))
         data = json.dumps(convert_records(record))
-
         try:
             r = requests.post(url, headers=headers,data=data)
         except Exception as e:
@@ -74,31 +73,30 @@ def handler(event, context):
 def initial_execution(param_name,bucket,key):
 
     time = get_timestamp(param_name)
-    query = 'SELECT "bill to customer", "bill to number", "cntrolling customer", "cntrolling customer number", cast(load_create_date as varchar(19)), cast(load_update_date as varchar(19)), "month", "owner", "profit", "sales rep", "source system", "total charge", "total cost", "year" FROM datamart.sales_summary WHERE (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
+    query = 'SELECT "bill to customer", "bill to number", "cntrolling customer", "cntrolling customer number", load_create_date, load_update_date, "month", "owner", "profit", "sales rep", "source system", "total charge", "total cost", "year", id FROM datamart.sales_summary WHERE (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
     s3Data = s3UploadObject(queryData,'/tmp/sales_summary.txt',bucket,key)
     return execute_db_query(query)
 
 def convert_records(data):
-
     try:
         record = {}
-        record["Name"] = ""
+        record["unique_id"] = data[14]
         record["bill to customer"] = data[0]
         record["bill to number"] = data[1]
         record["controlling customer"] = data[2]
         record["controlling customer number"] = data[3]
-        record["global_customer"] = str(data[10])+"-"+str(data[1])
-        record["load_create_date"] = update_date(data[4]) #modify_date(data[4])
-        record["load_update_date"] = update_date(data[5]) #modify_date(data[5])
+        record["global_name_match"] = str(data[10])+"-"+str(data[1])
+        record["load_create_date"] = update_date(data[4]) 
+        record["load_update_date"] = update_date(data[5]) 
         record["month"] = data[6]
-        record["owner"] = ""
         record["profit"] = float(data[8])
         record["sales rep"] = data[9]
         record["source_system"] = data[10]
         record["total charge"] = float(data[11])
         record["total cost"] = float(data[12])
         record["year"] = data[13]
+        record["owner"] = ""
         return record
     except Exception as e:
         logging.exception("RecordConversionError: {}".format(e))

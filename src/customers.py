@@ -82,7 +82,7 @@ def initial_execution(param_name,bucket,key):
 def convert_records(data):
     try:
         record = {}
-        record["Name"] = data[0]
+        # record["unique_id"] = ""
         record["account_mgr"] = data[1]
         record["Address_1"] = data[2]
         record["Address_2"] = data[3]
@@ -94,6 +94,7 @@ def convert_records(data):
         record["controlling_only"] = data[9]
         record["country"] = data[10]
         record["cust_contact"] = data[11]
+        record["customer_name"] = data[0]
         record["email"] = data[12]
         record["global_name_match"] = str(data[18])+"-"+str(data[15])
         record["load_create_date"] = update_date(data[13])
