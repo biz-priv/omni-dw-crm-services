@@ -5,8 +5,10 @@ import requests
 import psycopg2
 import pytz
 import boto3
+import datetime
 from decimal import Decimal
-from datetime import datetime,timezone
+from datetime import datetime as dt
+from datetime import timezone
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -42,21 +44,21 @@ def handler(event, context):
         start_record = 0
         records = initial_execution(timestamp_param_name,bucket,key)
     
-    stop_record = (start_record + 10) if (start_record + 10) < len(records) else len(records)
+    stop_record = (start_record + 100) if (start_record + 100) < len(records) else len(records)
 
     logger.info("Executing from array index {} to {}".format(start_record, stop_record))
     count = 0
     for record in records[start_record:stop_record]:
 
         count=count+1
-        if count % 10 == 0:
+        if count % 100 == 0:
             logger.info("Working on processing element number: {}".format(records.index(record)))
         data = json.dumps(convert_records(record))
         try:
             r = requests.post(url, headers=headers,data=data)
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
-            set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt))
+            set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt))
             raise ApiPostError(json.dumps({"httpStatus": 400, "message": "Api post error."}))
     
     logger.info("Execution complete!")
@@ -67,7 +69,7 @@ def handler(event, context):
     else:
         logger.info("completed!")
         event["status"] = "Completed"
-        set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt))
+        set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt))
     return event
 
 def initial_execution(param_name,bucket,key):
@@ -81,7 +83,6 @@ def initial_execution(param_name,bucket,key):
 def convert_records(data):
     try:
         record = {}
-        record["unique_id"] = data[14]
         record["bill to customer"] = data[0]
         record["bill to number"] = data[1]
         record["controlling customer"] = data[2]
@@ -97,6 +98,7 @@ def convert_records(data):
         record["total cost"] = float(data[12])
         record["year"] = data[13]
         record["owner"] = ""
+        record["unique_id"] = data[14]
         return record
     except Exception as e:
         logging.exception("RecordConversionError: {}".format(e))
