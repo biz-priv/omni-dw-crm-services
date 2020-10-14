@@ -4,15 +4,10 @@ import logging
 import requests
 import pytz
 import boto3
-<<<<<<< HEAD
-from datetime import datetime,timezone
-import datetime
-=======
 import datetime
 from decimal import Decimal
 from datetime import datetime as dt
 from datetime import timezone
->>>>>>> c69e2ab7606077e8ef828671679fe1840846b030
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

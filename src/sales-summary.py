@@ -7,13 +7,8 @@ import pytz
 import boto3
 import datetime
 from decimal import Decimal
-<<<<<<< HEAD
-from datetime import datetime,timezone
-import datetime
-=======
 from datetime import datetime as dt
 from datetime import timezone
->>>>>>> c69e2ab7606077e8ef828671679fe1840846b030
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
