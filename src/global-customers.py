@@ -4,8 +4,15 @@ import logging
 import requests
 import pytz
 import boto3
+<<<<<<< HEAD
 from datetime import datetime,timezone
 import datetime
+=======
+import datetime
+from decimal import Decimal
+from datetime import datetime as dt
+from datetime import timezone
+>>>>>>> c69e2ab7606077e8ef828671679fe1840846b030
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -54,7 +61,7 @@ def handler(event, context):
             r = requests.post(url, headers=headers,data=data)
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
-            set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt)) #changed the timestamp
+            set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt)) #changed the timestamp
             raise ApiPostError(json.dumps({"httpStatus": 400, "message": "Api post error."}))
     
     logger.info("Execution complete!")
@@ -65,7 +72,7 @@ def handler(event, context):
     else:
         logger.info("completed!")
         event["status"] = "Completed"
-        set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt))
+        set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt))
     return event
 
 def initial_execution(param_name,bucket,key):
