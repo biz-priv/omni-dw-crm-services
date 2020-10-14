@@ -7,6 +7,7 @@ import pytz
 import boto3
 from decimal import Decimal
 from datetime import datetime,timezone
+import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -42,14 +43,14 @@ def handler(event, context):
         start_record = 0
         records = initial_execution(timestamp_param_name,bucket,key)
     
-    stop_record = (start_record + 10) if (start_record + 10) < len(records) else len(records)
+    stop_record = (start_record + 100) if (start_record + 100) < len(records) else len(records)
 
     logger.info("Executing from array index {} to {}".format(start_record, stop_record))
     count = 0
     for record in records[start_record:stop_record]:
 
         count=count+1
-        if count % 10 == 0:
+        if count % 100 == 0:
             logger.info("Working on processing element number: {}".format(records.index(record)))
         data = json.dumps(convert_records(record))
         try:
@@ -81,7 +82,6 @@ def initial_execution(param_name,bucket,key):
 def convert_records(data):
     try:
         record = {}
-        record["unique_id"] = data[14]
         record["bill to customer"] = data[0]
         record["bill to number"] = data[1]
         record["controlling customer"] = data[2]
@@ -97,6 +97,7 @@ def convert_records(data):
         record["total cost"] = float(data[12])
         record["year"] = data[13]
         record["owner"] = ""
+        record["unique_id"] = data[14]
         return record
     except Exception as e:
         logging.exception("RecordConversionError: {}".format(e))
