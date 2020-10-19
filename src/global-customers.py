@@ -38,6 +38,7 @@ def handler(event, context):
         start_record = event["start_from"]
         s3_data = s3GetObject(bucket,key)
         records = eval(s3_data)
+        print(records)
     else:
         start_record = 0
         records = initial_execution(timestamp_param_name,bucket,key)
@@ -54,6 +55,10 @@ def handler(event, context):
         data = json.dumps(convert_records(record))
         try:
             r = requests.post(url, headers=headers,data=data)
+            if r.status_code==200:
+               results_success = logger.info("Inserted record : {}".format(record[9]))
+            else:
+                results_failure = logger.info("record not inserted. Unique id of the record is : {}".format(record[9]))
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt)) #changed the timestamp

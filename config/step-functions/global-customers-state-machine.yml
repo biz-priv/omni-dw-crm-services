@@ -22,3 +22,10 @@ stateMachine:
             Next: SuccessState
       SuccessState:
         Type: Succeed
+  events:  
+    - schedule:
+        name: omni-crm-global-customers-state-machine-${self:provider.stage}
+        description: 'schedule cloud watch event at 1AM and 1PM every day for global customers state machine'
+        rate: cron(0 1,13 * * ? *)
+        input:
+          key1: ""
