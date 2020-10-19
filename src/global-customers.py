@@ -38,7 +38,6 @@ def handler(event, context):
         start_record = event["start_from"]
         s3_data = s3GetObject(bucket,key)
         records = eval(s3_data)
-        print(records)
     else:
         start_record = 0
         records = initial_execution(timestamp_param_name,bucket,key)

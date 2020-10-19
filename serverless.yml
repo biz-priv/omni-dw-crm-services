@@ -46,5 +46,3 @@ stepFunctions:
     sales-summary-state-machine: ${file(config/step-functions/sales-summary-state-machine.yml):stateMachine}
     global-customers-state-machine: ${file(config/step-functions/global-customers-state-machine.yml):stateMachine}
     customers-state-machine: ${file(config/step-functions/customers-state-machine.yml):stateMachine}
-
-    

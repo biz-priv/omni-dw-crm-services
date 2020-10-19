@@ -59,7 +59,6 @@ def handler(event, context):
             r = requests.post(url, headers=headers,data=data)
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
-            print("dt value is:",dt.now(tz).strftime(fmt))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt)) #changed the timestamp
             raise ApiPostError(json.dumps({"httpStatus": 400, "message": "Api post error."}))
     
