@@ -1,0 +1,24 @@
+
+function:
+  handler: src/customers.handler
+  name: ${self:service}-customers-${self:provider.stage}
+  description: omni crm dynamics Customers - ${self:provider.stage}
+  memorySize: 1024 
+  timeout: 900
+  package:
+    include:
+    - src/customers.py
+    - src/common.py
+    - psycopg2/*
+  environment:
+    db_username: ${ssm:/omni-dw/${self:provider.stage}/db/user~true}
+    db_password: ${ssm:/omni-dw/${self:provider.stage}/db/password~true}
+    db_name: ${ssm:/omni-dw/${self:provider.stage}/db/name}
+    db_host: ${ssm:/omni-dw/${self:provider.stage}/db/host~true}
+    db_port: ${ssm:/omni-dw/${self:provider.stage}/db/port} 
+    REGION: ${self:provider.region}
+    customer_table_url: ${ssm:/${self:service}/${self:provider.stage}/customers/url}
+    timestamp_parameter: /${self:service}/${self:provider.stage}/customers/timestamp
+    s3_bucket: ${ssm:/${self:service}/${self:provider.stage}/bucket}
+    s3_key: ${ssm:/${self:service}/${self:provider.stage}/customers/s3/key}
+

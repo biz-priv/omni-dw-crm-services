@@ -1,0 +1,23 @@
+
+function:
+  handler: src/sales-summary.handler
+  name: ${self:service}-sales-summary-${self:provider.stage}
+  description: omni crm dynamics sales summary - ${self:provider.stage}
+  memorySize: 2048
+  timeout: 
+  package:
+    include:
+    - src/sales-summary.py
+    - src/common.py
+    - psycopg2/*
+  environment:
+    db_username: ${ssm:/omni-dw/${self:provider.stage}/db/user~true}
+    db_password: ${ssm:/omni-dw/${self:provider.stage}/db/password~true}
+    db_name: ${ssm:/omni-dw/${self:provider.stage}/db/name}
+    db_host: ${ssm:/omni-dw/${self:provider.stage}/db/host~true}
+    db_port: ${ssm:/omni-dw/${self:provider.stage}/db/port} 
+    REGION: ${self:provider.region}
+    salessummary_table_url: ${ssm:/${self:service}/${self:provider.stage}/salesSummary/url}
+    timestamp_parameter: /${self:service}/${self:provider.stage}/salesSummary/timestamp
+    s3_bucket: ${ssm:/${self:service}/${self:provider.stage}/bucket}
+    s3_key: ${ssm:/${self:service}/${self:provider.stage}/salesSummary/s3/key}
