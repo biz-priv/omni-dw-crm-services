@@ -24,7 +24,6 @@ tz = pytz.timezone('US/Central')
 fmt = '%Y-%m-%d %H:%M:%S'
 
 def handler(event, context):
-    logger.info("Event: {}".format(json.dumps(event)))
     try:
         url = os.environ['globalcustomer_table_url']
         timestamp_param_name = os.environ['timestamp_parameter']
@@ -36,28 +35,32 @@ def handler(event, context):
 
     if "start_from" in event:
         start_record = event["start_from"]
+        logger.info("start record is :{}".format(start_record))
         s3_data = s3GetObject(bucket,key)
         records = eval(s3_data)
     else:
         start_record = 0
         records = initial_execution(timestamp_param_name,bucket,key)
 
+    
     stop_record = (start_record + 100) if (start_record + 100) < len(records) else len(records)
-
+    logger.info("stop record is :{}".format(stop_record))
     logger.info("Executing from array index {} to {}".format(start_record, stop_record))
     count = 0
+    
     for record in records[start_record:stop_record]:
+        
         count=count+1
         if count % 100 == 0:
             logger.info("Working on processing element number: {}".format(records.index(record)))
-
         data = json.dumps(convert_records(record))
         try:
             r = requests.post(url, headers=headers,data=data)
-            if r.status_code==200:
-               results_success = logger.info("Inserted record : {}".format(record[9]))
+            
+            if r.status_code != 200:
+               results_failure = logger.info("record not inserted : {}".format(record[9]))
             else:
-                results_failure = logger.info("record not inserted. Unique id of the record is : {}".format(record[9]))
+                results_success = logger.info("record inserted. Unique id of the record is : {}".format(record[9]))
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt)) #changed the timestamp
@@ -79,8 +82,8 @@ def initial_execution(param_name,bucket,key):
     query = 'SELECT new_global_name,bill_to,bill_to_name, care_of_filter, care_of_name, company, customer_type, source_system,subsidiary_consolidation, id FROM public.global_cust_name WHERE (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
     s3Data = s3UploadObject(queryData,'/tmp/global_customers.txt',bucket,key)
-    return execute_db_query(query)
-
+    return queryData
+    
 def convert_records(data):
     try:
         record = {}

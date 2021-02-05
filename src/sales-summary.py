@@ -46,6 +46,7 @@ def handler(event, context):
     
     stop_record = (start_record + 100) if (start_record + 100) < len(records) else len(records)
 
+    logger.info("stop record is :{}".format(stop_record))
     logger.info("Executing from array index {} to {}".format(start_record, stop_record))
     count = 0
     for record in records[start_record:stop_record]:
@@ -56,6 +57,10 @@ def handler(event, context):
         data = json.dumps(convert_records(record))
         try:
             r = requests.post(url, headers=headers,data=data)
+            if r.status_code != 200:
+               results_failure = logger.info("record not inserted : {}".format(record[14]))
+            else:
+                results_success = logger.info("record inserted. Unique id of the record is : {}".format(record[14]))
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt))
@@ -73,12 +78,11 @@ def handler(event, context):
     return event
 
 def initial_execution(param_name,bucket,key):
-
     time = get_timestamp(param_name)
     query = 'SELECT "bill to customer", "bill to number", "cntrolling customer", "cntrolling customer number", load_create_date, load_update_date, "month", "owner", "profit", "sales rep", "source system", "total charge", "total cost", "year", id FROM datamart.sales_summary WHERE (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
     s3Data = s3UploadObject(queryData,'/tmp/sales_summary.txt',bucket,key)
-    return execute_db_query(query)
+    return queryData
 
 def convert_records(data):
     try:
