@@ -4,12 +4,7 @@ function:
   name: ${self:service}-sales-summary-${self:provider.stage}
   description: omni crm dynamics sales summary - ${self:provider.stage}
   memorySize: 2048
-  timeout: 900
-  # events:
-  #   - schedule:
-  #     name: omni-crm-dynamics-salesSummary
-  #     description: 'schedule cloud watch event at 1AM and 1PM every day for sales summary dynamics crm'
-  #     rate: cron(0 1-13 * * ? *)
+  timeout: 
   package:
     include:
     - src/sales-summary.py

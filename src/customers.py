@@ -5,8 +5,9 @@ import requests
 import psycopg2
 import boto3
 import pytz
+import datetime
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime as dt
 from datetime import timezone
 
 logger = logging.getLogger()
@@ -45,20 +46,27 @@ def handler(event, context):
         records = initial_execution(timestamp_param_name,bucket,key)
     
     stop_record = (start_record + 100) if (start_record + 100) < len(records) else len(records)
-
+    
+    logger.info("stop record is :{}".format(stop_record))
     logger.info("Executing from array index {} to {}".format(start_record, stop_record))
     count = 0
     for record in records[start_record:stop_record]:
+        
         count=count+1
         if count % 100 == 0:
             logger.info("Working on processing element number: {}".format(records.index(record)))
         data = json.dumps(convert_records(record))
-
+        
         try:
             r = requests.post(url, headers=headers,data=data)
+            if r.status_code != 200:
+               results_failure = logger.info("record not inserted : {}".format(record[22]))
+            else:
+                results_success = logger.info("record inserted. Unique id of the record is : {}".format(record[22]))
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
-            set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt)) #changed the timestamp
+            print("dt value is:",dt.now(tz).strftime(fmt))
+            set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt)) #changed the timestamp
             raise ApiPostError(json.dumps({"httpStatus": 400, "message": "Api post error."}))
     
     logger.info("Execution complete!")
@@ -69,20 +77,20 @@ def handler(event, context):
     else:
         logger.info("completed!")
         event["status"] = "Completed"
-        set_timestamp(timestamp_param_name, datetime.now(tz).strftime(fmt))
+        set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt))
     return event
 
 def initial_execution(param_name,bucket,key):
     time = get_timestamp(param_name)
-    query = 'SELECT name, account_mgr, addr1, addr2, ap_email, bill_to_nbr, billto_only, city, controlling_nbr, controlling_only, country, cust_contact, email, load_create_date, load_update_date, nbr, owner, sales_rep, source_system, state, station, zip FROM public.customers WHERE (billto_only = \'Y\' OR controlling_only = \'Y\') AND (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
+    query = 'SELECT name, account_mgr, addr1, addr2, ap_email, bill_to_nbr, billto_only, city, controlling_nbr, controlling_only, country, cust_contact, email, load_create_date, load_update_date, nbr, owner, sales_rep, source_system, state, station, zip, id FROM public.customers WHERE (billto_only = \'Y\' OR controlling_only = \'Y\') AND (load_create_date >= \''+time+'\' OR load_update_date >= \''+time+'\')'
     queryData = execute_db_query(query)
     s3Data = s3UploadObject(queryData,'/tmp/customers.txt',bucket,key)
-    return execute_db_query(query)
-
+    return queryData
+    
 def convert_records(data):
     try:
         record = {}
-        record["Name"] = data[0]
+        record["customer_name"] = data[0]
         record["account_mgr"] = data[1]
         record["Address_1"] = data[2]
         record["Address_2"] = data[3]
@@ -105,6 +113,7 @@ def convert_records(data):
         record["state"] = data[19]
         record["station"] = data[20]
         record["zip"] = data[21]
+        record["unique_id"] = data[22]
         return record
     except Exception as e:
         logging.exception("RecordConversionError: {}".format(e))

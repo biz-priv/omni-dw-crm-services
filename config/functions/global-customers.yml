@@ -5,11 +5,6 @@ function:
   description: omni crm dynamics global customers - ${self:provider.stage}
   memorySize: 1024 
   timeout: 900
-  # events:  
-  #   - schedule:
-  #     name: omni-crm-dynamics-global-customers
-  #     description: 'schedule cloud watch event at 1AM and 1PM every day for global customers dynamics crm'
-  #     rate: cron(0 1-13 * * ? *)
   package:
     include:
     - src/global-customers.py
@@ -26,3 +21,4 @@ function:
     timestamp_parameter: /${self:service}/${self:provider.stage}/globalCustomers/timestamp
     s3_bucket: ${ssm:/${self:service}/${self:provider.stage}/bucket}
     s3_key: ${ssm:/${self:service}/${self:provider.stage}/globalCustomers/s3/key}
+

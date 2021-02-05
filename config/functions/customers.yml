@@ -5,12 +5,6 @@ function:
   description: omni crm dynamics Customers - ${self:provider.stage}
   memorySize: 1024 
   timeout: 900
-  # events:  
-  #   - schedule:
-  #       name: omni-crm-dynamics-customers
-  #       description: 'schedule cloud watch event at 1AM and 1PM every day for customers dynamics crm'
-  #       # rate: cron(0 1-13 * * ? *)
-  #       rate: cron(0/10 * ? * * *) 
   package:
     include:
     - src/customers.py
