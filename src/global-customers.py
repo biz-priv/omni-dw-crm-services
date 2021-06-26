@@ -23,9 +23,12 @@ headers = {'content-type': 'application/json'}
 tz = pytz.timezone('US/Central')
 fmt = '%Y-%m-%d %H:%M:%S'
 
+sns = boto3.client('sns')
+
 def handler(event, context):
     try:
         url = os.environ['globalcustomer_table_url']
+        sns_topic_arn = "arn:aws:sns:us-east-1:332281781429:dynamics_crm_failures_global_customers"
         timestamp_param_name = os.environ['timestamp_parameter']
         bucket = os.environ['s3_bucket']
         key = os.environ['s3_key']
@@ -59,8 +62,9 @@ def handler(event, context):
             
             if r.status_code != 200:
                results_failure = logger.info("record not inserted : {}".format(record[9]))
-            else:
-                results_success = logger.info("record inserted. Unique id of the record is : {}".format(record[9]))
+               sub = "Record was not inserted into Dynamics365 CRM"
+               msg = "Record Information: "+data
+               sns_notify(sub, msg, sns_topic_arn)
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt)) #changed the timestamp
@@ -103,6 +107,13 @@ def convert_records(data):
     except Exception as e:
         logging.exception("RecordConversionError: {}".format(e))
         raise RecordConversionError(json.dumps({"httpStatus": 400, "message": "Record conversion error."}))
+
+def sns_notify(sub, msg, sns_topic_arn):
+    response = sns.publish(
+    TopicArn = sns_topic_arn,
+    Subject= sub,
+    Message= msg)
+    print(response)
 
 class EnvironmentVariableError(Exception): pass
 class GetS3ObjectError(Exception): pass
