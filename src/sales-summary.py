@@ -61,7 +61,7 @@ def handler(event, context):
         try:
             r = requests.post(url, headers=headers,data=data)
             if r.status_code != 200:
-               results_failure = logger.info("record not inserted : {}".format(record[14]))
+               logger.info("record not inserted : {}".format(record[14]))
                sub = "Record was not inserted into Dynamics365 CRM"
                msg = "Record Information: "+data
                sns_notify(sub, msg, sns_topic_arn)
