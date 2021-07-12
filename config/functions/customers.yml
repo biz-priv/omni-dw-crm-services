@@ -21,4 +21,4 @@ function:
     timestamp_parameter: /${self:service}/${self:provider.stage}/customers/timestamp
     s3_bucket: ${ssm:/${self:service}/${self:provider.stage}/bucket}
     s3_key: ${ssm:/${self:service}/${self:provider.stage}/customers/s3/key}
-
+    sns_arn: ${ssm:/${self:service}/${self:provider.stage}/customers/sns/arn}

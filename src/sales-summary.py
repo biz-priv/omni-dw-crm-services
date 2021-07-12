@@ -2,36 +2,30 @@ import os
 import json
 import logging
 import requests
-import psycopg2
 import pytz
-import boto3
 import datetime
-from decimal import Decimal
 from datetime import datetime as dt
-from datetime import timezone
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-from src.common import modify_date
 from src.common import update_date
 from src.common import execute_db_query
 from src.common import get_timestamp
 from src.common import set_timestamp
 from src.common import s3GetObject
 from src.common import s3UploadObject
+from src.common import sns_notify
 
 headers = {'content-type': 'application/json'}
 tz = pytz.timezone('US/Central')
 fmt = '%Y-%m-%d %H:%M:%S'
 
-sns = boto3.client('sns')
-
 def handler(event, context):
     logger.info("Event: {}".format(json.dumps(event)))
     try:
         url = os.environ['salessummary_table_url']
-        sns_topic_arn = "arn:aws:sns:us-east-1:332281781429:dynamics_crm_failures"
+        sns_topic_arn = os.environ['sns_arn']
         timestamp_param_name = os.environ['timestamp_parameter']
         bucket = os.environ['s3_bucket']
         key = os.environ['s3_key']
@@ -111,13 +105,6 @@ def convert_records(data):
     except Exception as e:
         logging.exception("RecordConversionError: {}".format(e))
         raise RecordConversionError(json.dumps({"httpStatus": 400, "message": "Record conversion error."}))
-
-def sns_notify(sub, msg, sns_topic_arn):
-    response = sns.publish(
-    TopicArn = sns_topic_arn,
-    Subject= sub,
-    Message= msg)
-    print(response)
 
 class EnvironmentVariableError(Exception): pass
 class GetS3ObjectError(Exception): pass
