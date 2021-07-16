@@ -2,8 +2,9 @@ import os
 import json
 import logging
 import requests
-import pytz
+import psycopg2
 import boto3
+import pytz
 import datetime
 from decimal import Decimal
 from datetime import datetime as dt
@@ -12,12 +13,12 @@ from datetime import timezone
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-from src.common import modify_date
 from src.common import execute_db_query
 from src.common import get_timestamp
 from src.common import set_timestamp
 from src.common import s3GetObject
 from src.common import s3UploadObject
+from src.common import sns_notify
 
 headers = {'content-type': 'application/json'}
 tz = pytz.timezone('US/Central')
@@ -26,6 +27,7 @@ fmt = '%Y-%m-%d %H:%M:%S'
 def handler(event, context):
     try:
         url = os.environ['globalcustomer_table_url']
+        sns_topic_arn = os.environ['sns_arn']
         timestamp_param_name = os.environ['timestamp_parameter']
         bucket = os.environ['s3_bucket']
         key = os.environ['s3_key']
@@ -58,9 +60,10 @@ def handler(event, context):
             r = requests.post(url, headers=headers,data=data)
             
             if r.status_code != 200:
-               results_failure = logger.info("record not inserted : {}".format(record[9]))
-            else:
-                results_success = logger.info("record inserted. Unique id of the record is : {}".format(record[9]))
+               logger.info("record not inserted : {}".format(record[9]))
+               sub = "Record was not inserted into Dynamics365 CRM"
+               msg = "Record Information: "+data
+               sns_notify(sub, msg, sns_topic_arn)
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt)) #changed the timestamp
