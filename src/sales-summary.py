@@ -3,8 +3,8 @@ import json
 import logging
 import requests
 import psycopg2
-import pytz
 import boto3
+import pytz
 import datetime
 from decimal import Decimal
 from datetime import datetime as dt
@@ -13,13 +13,13 @@ from datetime import timezone
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-from src.common import modify_date
 from src.common import update_date
 from src.common import execute_db_query
 from src.common import get_timestamp
 from src.common import set_timestamp
 from src.common import s3GetObject
 from src.common import s3UploadObject
+from src.common import sns_notify
 
 headers = {'content-type': 'application/json'}
 tz = pytz.timezone('US/Central')
@@ -29,6 +29,7 @@ def handler(event, context):
     logger.info("Event: {}".format(json.dumps(event)))
     try:
         url = os.environ['salessummary_table_url']
+        sns_topic_arn = os.environ['sns_arn']
         timestamp_param_name = os.environ['timestamp_parameter']
         bucket = os.environ['s3_bucket']
         key = os.environ['s3_key']
@@ -58,9 +59,10 @@ def handler(event, context):
         try:
             r = requests.post(url, headers=headers,data=data)
             if r.status_code != 200:
-               results_failure = logger.info("record not inserted : {}".format(record[14]))
-            else:
-                results_success = logger.info("record inserted. Unique id of the record is : {}".format(record[14]))
+               logger.info("record not inserted : {}".format(record[14]))
+               sub = "Record was not inserted into Dynamics365 CRM"
+               msg = "Record Information: "+data
+               sns_notify(sub, msg, sns_topic_arn)
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt))
@@ -107,7 +109,7 @@ def convert_records(data):
     except Exception as e:
         logging.exception("RecordConversionError: {}".format(e))
         raise RecordConversionError(json.dumps({"httpStatus": 400, "message": "Record conversion error."}))
-    
+
 class EnvironmentVariableError(Exception): pass
 class GetS3ObjectError(Exception): pass
 class UpdateFileError(Exception): pass

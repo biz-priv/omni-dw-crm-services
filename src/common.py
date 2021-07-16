@@ -3,7 +3,6 @@ import json
 import boto3
 import logging
 import psycopg2
-from datetime import datetime,timezone
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -60,6 +59,17 @@ def set_timestamp(param_name, param_value):
         logging.exception("SsmSetParameterError: {}".format(e))
         raise SetParameterError(json.dumps({"httpStatus": 400, "message": "ssm set parameter error."}))
 
+def sns_notify(sub, msg, sns_topic_arn):
+    try:
+        sns = boto3.client('sns')
+        response = sns.publish(
+        TopicArn = sns_topic_arn,
+        Subject= sub,
+        Message= msg)
+        logger.info("Response: {}".format(json.dumps(response)))
+    except Exception as e:
+        logging.exception("SnsNotifyError: {}".format(e))
+
 def execute_db_query(query):
     try:
         con=psycopg2.connect(dbname = os.environ['db_name'], host=os.environ['db_host'],
@@ -82,11 +92,9 @@ def s3GetObject(bucket,key):
     except Exception as e:
         logging.exception("S3InitializationError: {}".format(e))
         raise InitializationError(json.dumps({"httpStatus": 400, "message": "s3 initialization error."}))
-
     try:
         data = s3.Object(bucket, key).get()['Body'].read()
         return data
-
     except Exception as e:
         logging.exception("GetS3ObjectError: {}".format(e))
         raise GetS3ObjectError(json.dumps({"httpStatus": 400, "message": "S3 Get object error."}))
@@ -96,8 +104,7 @@ def s3UploadObject(queryData,filename,bucket,key):
         s3 = boto3.resource('s3')
     except Exception as e:
         logging.exception("S3InitializationError: {}".format(e))
-        raise InitializationError(json.dumps({"httpStatus": 400, "message": "s3 initialization error."}))
-        
+        raise InitializationError(json.dumps({"httpStatus": 400, "message": "s3 initialization error."})) 
     try:
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(str(queryData))
