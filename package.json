@@ -21,6 +21,6 @@
     "serverless-step-functions": "^2.26.0"
   },
   "devDependencies": {
-    "serverless-layers": "^2.3.0"
+    "serverless-layers": "^2.4.0"
   }
 }

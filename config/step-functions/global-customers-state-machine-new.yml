@@ -1,0 +1,29 @@
+---
+stateMachine:
+  name: ${self:service}-global-customers-state-machine-new-${self:provider.stage}
+  definition:
+    Comment: 'State machine to process global customers new records'
+    StartAt: ProcessRecords
+    States:
+      ProcessRecords:
+        Type: Task
+        Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-global-customers-new-${self:provider.stage}"
+        Next: CheckNextState
+      CheckNextState: 
+        Type: Choice
+        Choices:
+          - 
+            Variable: "$.status"
+            StringEquals: "InProgress"
+            Next: ProcessRecords
+          - 
+            Variable: "$.status"
+            StringEquals: "Completed"
+            Next: SuccessState
+      SuccessState:
+        Type: Succeed
+  events:  
+    - schedule:
+        name: omni-crm-global-customers-state-machine-new-${self:provider.stage}
+        description: 'schedule cloud watch event at 1AM and 1PM every day for global customers state machine new'
+        rate: cron(0 1,13 * * ? *)
