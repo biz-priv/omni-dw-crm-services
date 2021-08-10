@@ -19,6 +19,6 @@ function:
     REGION: ${self:provider.region}
     globalcustomer_table_url_new: ${ssm:/${self:service}/${self:provider.stage}/globalCustomers/url/new}
     timestamp_parameter_new: /${self:service}/${self:provider.stage}/globalCustomers/timestamp/new
-    s3_bucket: ${ssm:/${self:service}/${self:provider.stage}/bucket}
+    s3_bucket_new: ${ssm:/${self:service}/${self:provider.stage}/bucket/new}
     s3_key: ${ssm:/${self:service}/${self:provider.stage}/globalCustomers/s3/key}
-
+    sns_arn: ${ssm:/${self:service}/${self:provider.stage}/global-customers-new/sns/arn}

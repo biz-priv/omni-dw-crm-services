@@ -21,3 +21,4 @@ function:
     timestamp_parameter_new: /${self:service}/${self:provider.stage}/salesSummary/timestamp/new
     s3_bucket_new: ${ssm:/${self:service}/${self:provider.stage}/bucket/new}
     s3_key: ${ssm:/${self:service}/${self:provider.stage}/salesSummary/s3/key}
+    sns_arn: ${ssm:/${self:service}/${self:provider.stage}/sales-summary-new/sns/arn}

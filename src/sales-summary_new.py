@@ -19,6 +19,7 @@ from src.common import get_timestamp
 from src.common import set_timestamp
 from src.common import s3GetObject
 from src.common import s3UploadObject
+from src.common import sns_notify
 
 headers = {'content-type': 'application/json'}
 tz = pytz.timezone('US/Central')
@@ -28,6 +29,7 @@ def handler(event, context):
     logger.info("Event: {}".format(json.dumps(event)))
     try:
         url = os.environ['salessummary_table_url_new']
+        sns_topic_arn = os.environ['sns_arn']
         timestamp_param_name = os.environ['timestamp_parameter_new']
         bucket = os.environ['s3_bucket_new']
         key = os.environ['s3_key']
@@ -58,6 +60,9 @@ def handler(event, context):
             r = requests.post(url, headers=headers,data=data)
             if r.status_code != 200:
                logger.info("record not inserted : {}".format(record[14]))
+               sub = "Record was not inserted into Dynamics365 CRM"
+               msg = "Record Information: "+data
+               sns_notify(sub, msg, sns_topic_arn)
         except Exception as e:
             logging.exception("ApiPostError: {}".format(e))
             set_timestamp(timestamp_param_name, dt.now(tz).strftime(fmt))

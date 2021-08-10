@@ -10,6 +10,7 @@ from decimal import Decimal
 from datetime import datetime as dt
 from datetime import timezone
 
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
