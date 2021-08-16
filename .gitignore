@@ -1,5 +1,5 @@
 node_modules
 requests
 psycopg2
-psycopg2_binary-2.8.6.dist-info
 .serverless
+psycopg2_binary-2.8.6.dist-info/*
