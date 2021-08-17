@@ -1,0 +1,29 @@
+---
+stateMachine:
+  name: ${self:service}-sales-summary-state-machine-new-${self:provider.stage}
+  definition:
+    Comment: 'State machine to process sales summary new records'
+    StartAt: ProcessRecords
+    States:
+      ProcessRecords:
+        Type: Task
+        Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-sales-summary-new-${self:provider.stage}"
+        Next: CheckNextState
+      CheckNextState: 
+        Type: Choice
+        Choices:
+          - 
+            Variable: "$.status"
+            StringEquals: "InProgress"
+            Next: ProcessRecords
+          - 
+            Variable: "$.status"
+            StringEquals: "Completed"
+            Next: SuccessState
+      SuccessState:
+        Type: Succeed
+  events:  
+    - schedule:
+        name: omni-crm-sales-summary-state-machine-new-${self:provider.stage}
+        description: 'schedule cloud watch event at 1AM and 1PM every day for sales summary state machine'
+        rate: cron(0 1,13 * * ? *)

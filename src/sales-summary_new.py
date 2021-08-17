@@ -10,7 +10,6 @@ from decimal import Decimal
 from datetime import datetime as dt
 from datetime import timezone
 
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -29,10 +28,10 @@ fmt = '%Y-%m-%d %H:%M:%S'
 def handler(event, context):
     logger.info("Event: {}".format(json.dumps(event)))
     try:
-        url = os.environ['salessummary_table_url']
+        url = os.environ['salessummary_table_url_new']
         sns_topic_arn = os.environ['sns_arn']
-        timestamp_param_name = os.environ['timestamp_parameter']
-        bucket = os.environ['s3_bucket']
+        timestamp_param_name = os.environ['timestamp_parameter_new']
+        bucket = os.environ['s3_bucket_new']
         key = os.environ['s3_key']
     except Exception as e:
         logging.exception("EnvironmentVariableError: {}".format(e))
