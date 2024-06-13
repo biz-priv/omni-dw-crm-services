@@ -1,3 +1,10 @@
+# """
+# * File: src\common.py
+# * Project: Omni-dw-crm-services
+# * Author: Bizcloud Experts
+# * Date: 2021-07-13
+# * Confidential and Proprietary
+# """
 import os
 import json
 import boto3

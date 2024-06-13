@@ -5,6 +5,8 @@ function:
   description: omni crm dynamics sales summary - ${self:provider.stage}
   memorySize: 2048
   timeout: 900
+  tags: 
+    Name : sales-summary
   package:
     include:
     - src/sales-summary.py
