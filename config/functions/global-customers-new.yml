@@ -5,6 +5,8 @@ function:
   description: omni crm dynamics global customers new - ${self:provider.stage}
   memorySize: 1024 
   timeout: 900
+  tags: 
+    Name : global-customers-new
   package:
     include:
     - src/global-customers_new.py
